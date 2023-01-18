@@ -14,3 +14,8 @@ sudo apt install imagemagick
 pip install -U wheel pip -Ur requirements.txt
 ```
 
+
+```
+python3 src/app.py
+```
+
