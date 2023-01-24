@@ -39,15 +39,15 @@ def uploadVideo():
     })
 
 
-@main.route('/uploadStoryVideo', methods=['POST'])
-def uploadStoryVideo():
+@main.route('/uploadStoryPhotoVideo', methods=['POST'])
+def uploadStoryPhotoVideo():
     message = ''
     status = False
     try:
         req = InstagrapiService.setParameters(request)
-        InstagrapiService.uploadStoryVideo(req)
+        InstagrapiService.uploadStoryPhotoVideo(req)
         status = True
-        message = 'Video to Story Uploaded'
+        message = 'Story Uploaded'
     except (Exception, ValueError) as ex:
         message = str(ex)
     return jsonify({
@@ -56,18 +56,16 @@ def uploadStoryVideo():
     })
 
 
-@main.route('/uploadStoryPhoto', methods=['POST'])
-def uploadStoryPhoto():
-    message = ''
-    status = False
+@main.route('/searchFont')
+def searchFont():
+    data = []
+    message = ""
     try:
-        req = InstagrapiService.setParameters(request)
-        InstagrapiService.uploadStoryPhoto(req)
-        status = True
-        message = 'Photo to Story Uploaded'
-    except (Exception, ValueError) as ex:
+        req = request.form
+        data = InstagrapiService.searchFont(req['font'])
+    except (Exception) as ex:
         message = str(ex)
     return jsonify({
-        'status': status,
+        'data': data,
         'message': message
     })

@@ -1,7 +1,9 @@
 from instagrapi import Client
-from instagrapi.types import StoryLink
-from instagrapi.story import StoryBuilder
+from instagrapi.types import StoryLink, StorySticker, StoryStickerLink, StoryBuild
+from utils.storyCustom import StoryBuilder
+# from instagrapi.story import StoryBuilder
 from pathlib import Path
+from moviepy.editor import VideoFileClip, TextClip
 
 
 class InstagrapiService():
@@ -9,16 +11,23 @@ class InstagrapiService():
     def setParameters(self, request):
         file = request.files
         req = self.validateFields(request.form)
-        type = request.path
-        acceptedExt = 'mp4' if type.endswith('Video') else 'jpeg'
-        pathFile = self.saveFiles(file['file'], acceptedExt)
+
+        pathFile = self.saveFiles(request, file['file'],  False)
+        pathBackground = self.saveFiles(request, file['background'], True)
+
         data = {
             'account': req['account'],
             'password': req['password'],
             'description': req.get('description') or '',
-            'alias': req.get('alias') or '',
             'file': pathFile,
-            'url': req.get('url') or []
+            'background': pathBackground,
+            'font': req.get('font') or 'Roboto',
+            'fontSize': req.get('fontSize') or 48,
+            'color': req.get('color') or 'black',
+            'title': req.get('title') or '',
+            'link': req.get('link') or '',
+            'shortcut_link': req.get('shortcut_link') or '',
+            'price': req.get('price') or '',
         }
         return data
 
@@ -33,8 +42,9 @@ class InstagrapiService():
 
     @classmethod
     def uploadPhoto(self, obj):
-        cl = self.isLogin(obj)
         mediapath = obj['file']
+
+        cl = self.isLogin(obj)
         cl.photo_upload(
             path=Path(mediapath),
             caption=obj['description'],
@@ -43,8 +53,9 @@ class InstagrapiService():
 
     @classmethod
     def uploadVideo(self, obj):
-        cl = self.isLogin(obj)
         mediapath = obj['file']
+
+        cl = self.isLogin(obj)
         cl.video_upload(
             path=Path(mediapath),
             caption=obj['description'],
@@ -52,43 +63,31 @@ class InstagrapiService():
         Path(mediapath).unlink()
 
     @classmethod
-    def uploadStoryVideo(self, obj):
-        cl = self.isLogin(obj)
+    def uploadStoryPhotoVideo(self, obj):
         mediapath = obj['file']
+        print(type(obj['color']))
         buildout = StoryBuilder(
-            mediapath,
-            obj['alias'],
-            None
-        ).video(30)
-
+            path=mediapath,
+            bgpath=None if obj['background'] == '' else obj['background'],
+            color=obj['color'],
+            font=obj['font'],
+            fontsize=obj['fontSize']
+        ).makeClipMedia(
+            link=obj['link'],
+            title=obj['title'],
+            price=obj['price'],
+            shortcut_link=obj['shortcut_link'],
+        )
+        cl = self.isLogin(obj)
         cl.video_upload_to_story(
             path=buildout.path,
-            links=[] if obj['url'] == [] else [StoryLink(
-                webUri=obj['url'],
-                # x=0.1,
-                # y=0.2,
-                # width=5,
-                # height=5
-            )],
+            stickers=buildout.stickers
         )
         Path(mediapath).unlink()
 
     @classmethod
-    def uploadStoryPhoto(self, obj):
-        cl = self.isLogin(obj)
-        mediapath = obj['file']
-
-        buildout = StoryBuilder(
-            path=mediapath,
-            caption=obj['alias'],
-            bgpath=None
-        ).vide(30)
-
-        cl.photo_upload_to_story(
-            path=buildout.path,
-            links=[StoryLink(webUri=obj['url'])],
-        )
-        Path(mediapath).unlink()
+    def searchFont(self, search):
+        return TextClip.search(search, 'font')
 
     @classmethod
     def validateFields(self, obj):
@@ -97,16 +96,39 @@ class InstagrapiService():
         return obj
 
     @classmethod
-    def saveFiles(self, file, acceptedExt):
+    def saveFiles(self, request, file, isBackground):
+        pathUrl = request.path
+        extFile = ''
+        if isBackground:
+            return ''
         if file.filename == '':
             raise ValueError("El campo file es obligatorio")
+
+        if pathUrl.endswith('uploadStoryPhotoVideo'):
+            acceptedExtensions = ["mp4", "jpeg"]
+            extFile = 'mp4' if file.content_type.endswith('mp4') else 'jpeg'
+            if extFile not in acceptedExtensions:
+                raise ValueError(
+                    "El archivo no es un formato admitido, solo se acepta archivos jpeg y mp4")
+        elif pathUrl.endswith('Video'):
+            extFile = 'mp4' if file.content_type.endswith('mp4') else 'jpeg'
+            if extFile != 'mp4':
+                raise ValueError(
+                    "El archivo no es un formato admitido, solo se acepta archivos mp4")
+        else:
+            extFile = 'mp4' if file.content_type.endswith('mp4') else 'jpeg'
+            if extFile != 'jpeg':
+                raise ValueError(
+                    "El archivo no es un formato admitido, solo se acepta archivos jpeg")
+
         path = Path(__file__).parent.parent
         filename = f"{path}/uploads/{file.filename}"
         file.save(filename)
 
-        file_path = Path(filename)
-        if file_path.suffix != f".{acceptedExt}":
-            Path(filename).unlink()
-            raise ValueError(
-                "El archivo no es un formato admitido, solo se acepta archivos jpeg")
+        # file_path = Path(filename)
+        # if file_path.suffix != f".{extFile}":
+        #     Path(filename).unlink()
+        #     raise ValueError(
+        #         "El archivo no es un formato admitido, solo se acepta archivos jpeg")
+
         return filename
