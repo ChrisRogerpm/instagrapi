@@ -103,20 +103,17 @@ class InstagrapiService():
             return ''
         if file.filename == '':
             raise ValueError("El campo file es obligatorio")
-
+        extFile = 'mp4' if file.content_type.endswith('mp4') else 'jpeg'
         if pathUrl.endswith('uploadStoryPhotoVideo'):
             acceptedExtensions = ["mp4", "jpeg"]
-            extFile = 'mp4' if file.content_type.endswith('mp4') else 'jpeg'
             if extFile not in acceptedExtensions:
                 raise ValueError(
                     "El archivo no es un formato admitido, solo se acepta archivos jpeg y mp4")
         elif pathUrl.endswith('Video'):
-            extFile = 'mp4' if file.content_type.endswith('mp4') else 'jpeg'
             if extFile != 'mp4':
                 raise ValueError(
                     "El archivo no es un formato admitido, solo se acepta archivos mp4")
         else:
-            extFile = 'mp4' if file.content_type.endswith('mp4') else 'jpeg'
             if extFile != 'jpeg':
                 raise ValueError(
                     "El archivo no es un formato admitido, solo se acepta archivos jpeg")
