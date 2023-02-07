@@ -14,14 +14,14 @@ class InstagrapiService():
         req = self.validateFields(request.form)
 
         pathFile = self.saveFiles(request, file['file'],  False)
-        pathBackground = self.saveFiles(request, file['background'], True)
+        # pathBackground = self.saveFiles(request, file['background'], True)
 
         data = {
             # 'account': req['account'],
             # 'password': req['password'],
             'description': req.get('description') or '',
             'file': pathFile,
-            'background': pathBackground,
+            # 'background': pathBackground,
             'font': req.get('font') or 'Roboto',
             'fontSize': req.get('fontSize') or 48,
             'color': req.get('color') or 'black',
@@ -71,7 +71,7 @@ class InstagrapiService():
         mediapath = obj['file']
         buildout = StoryBuilder(
             path=mediapath,
-            bgpath=None if obj['background'] == '' else obj['background'],
+            bgpath=None,  # if obj['background'] == '' else obj['background'],
             color=obj['color'],
             font=obj['font'],
             fontsize=obj['fontSize']
