@@ -4,6 +4,7 @@ from utils.storyCustom import StoryBuilder
 # from instagrapi.story import StoryBuilder
 from pathlib import Path
 from moviepy.editor import VideoFileClip, TextClip
+import json
 
 
 class InstagrapiService():
@@ -16,8 +17,8 @@ class InstagrapiService():
         pathBackground = self.saveFiles(request, file['background'], True)
 
         data = {
-            'account': req['account'],
-            'password': req['password'],
+            # 'account': req['account'],
+            # 'password': req['password'],
             'description': req.get('description') or '',
             'file': pathFile,
             'background': pathBackground,
@@ -34,8 +35,11 @@ class InstagrapiService():
     @classmethod
     def isLogin(self, obj):
         try:
-            cl = Client()
-            cl.login(obj['account'], obj['password'])
+            path = Path(__file__).parent.parent
+            filename = f"{path}/uploads/christianrpm90.json"
+            cl = Client(json.load(open(filename)))
+            # cl = Client()
+            # cl.login(obj['account'], obj['password'])
             return cl
         except Exception as ex:
             raise Exception(ex)
@@ -65,7 +69,6 @@ class InstagrapiService():
     @classmethod
     def uploadStoryPhotoVideo(self, obj):
         mediapath = obj['file']
-        print(type(obj['color']))
         buildout = StoryBuilder(
             path=mediapath,
             bgpath=None if obj['background'] == '' else obj['background'],
@@ -78,11 +81,11 @@ class InstagrapiService():
             price=obj['price'],
             shortcut_link=obj['shortcut_link'],
         )
-        cl = self.isLogin(obj)
-        cl.video_upload_to_story(
-            path=buildout.path,
-            stickers=buildout.stickers
-        )
+        # cl = self.isLogin(obj)
+        # cl.video_upload_to_story(
+        #     path=buildout.path,
+        #     stickers=buildout.stickers
+        # )
         Path(mediapath).unlink()
 
     @classmethod
@@ -91,8 +94,8 @@ class InstagrapiService():
 
     @classmethod
     def validateFields(self, obj):
-        if obj['account'] == '' or obj['password'] == '':
-            raise ValueError("Los campos account y password son obligatorios")
+        # if obj['account'] == '' or obj['password'] == '':
+        #     raise ValueError("Los campos account y password son obligatorios")
         return obj
 
     @classmethod
@@ -121,6 +124,7 @@ class InstagrapiService():
         path = Path(__file__).parent.parent
         filename = f"{path}/uploads/{file.filename}"
         file.save(filename)
+        return filename
 
         # file_path = Path(filename)
         # if file_path.suffix != f".{extFile}":
