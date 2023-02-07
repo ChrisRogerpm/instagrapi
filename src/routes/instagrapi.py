@@ -69,3 +69,18 @@ def searchFont():
         'data': data,
         'message': message
     })
+
+
+@main.route('/getLogin', methods=['POST'])
+def getLogin():
+    data = []
+    message = ""
+    try:
+        # req = InstagrapiService.setParameters(request)
+        data = InstagrapiService.saveCookieSession()
+    except (Exception) as ex:
+        message = str(ex)
+    return jsonify({
+        'data': data,
+        'message': message
+    })

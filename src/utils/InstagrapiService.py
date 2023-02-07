@@ -128,4 +128,11 @@ class InstagrapiService():
         #     raise ValueError(
         #         "El archivo no es un formato admitido, solo se acepta archivos jpeg")
 
-        return filename
+    @classmethod
+    def saveCookieSession(self):
+        data = [{"a": 54, "b": 87}, {"c": 81, "d": 63}, {"e": 17, "f": 39}]
+        letters = string.ascii_lowercase
+        letters = ''.join(random.choice(letters) for i in range(10))
+        # print ( ''.join(random.choice(letters) for i in range(10)) )
+        with open(f"uploads/{letters}.json", 'w') as f:
+            json.dump(data, f, indent=2)
