@@ -5,6 +5,9 @@ from utils.storyCustom import StoryBuilder
 from pathlib import Path
 from moviepy.editor import VideoFileClip, TextClip
 import json
+import requests
+import string
+import random
 
 
 class InstagrapiService():
@@ -13,7 +16,7 @@ class InstagrapiService():
         file = request.files
         req = self.validateFields(request.form)
 
-        pathFile = self.saveFiles(request, file['file'],  False)
+        pathFile = self.saveFiles(request, req['file'],  False)
         # pathBackground = self.saveFiles(request, file['background'], True)
 
         data = {
@@ -81,11 +84,11 @@ class InstagrapiService():
             price=obj['price'],
             shortcut_link=obj['shortcut_link'],
         )
-        # cl = self.isLogin(obj)
-        # cl.video_upload_to_story(
-        #     path=buildout.path,
-        #     stickers=buildout.stickers
-        # )
+        cl = self.isLogin(obj)
+        cl.video_upload_to_story(
+            path=buildout.path,
+            stickers=buildout.stickers
+        )
         Path(mediapath).unlink()
 
     @classmethod
@@ -100,37 +103,17 @@ class InstagrapiService():
 
     @classmethod
     def saveFiles(self, request, file, isBackground):
-        pathUrl = request.path
-        extFile = ''
-        if isBackground:
-            return ''
-        if file.filename == '':
-            raise ValueError("El campo file es obligatorio")
-        extFile = 'mp4' if file.content_type.endswith('mp4') else 'jpeg'
-        if pathUrl.endswith('uploadStoryPhotoVideo'):
-            acceptedExtensions = ["mp4", "jpeg"]
-            if extFile not in acceptedExtensions:
-                raise ValueError(
-                    "El archivo no es un formato admitido, solo se acepta archivos jpeg y mp4")
-        elif pathUrl.endswith('Video'):
-            if extFile != 'mp4':
-                raise ValueError(
-                    "El archivo no es un formato admitido, solo se acepta archivos mp4")
-        else:
-            if extFile != 'jpeg':
-                raise ValueError(
-                    "El archivo no es un formato admitido, solo se acepta archivos jpeg")
+        randomName = ''.join(random.choice(string.ascii_lowercase)
+                             for i in range(10))
+        extension = "jpeg"#re.search("\.([^.]+)$", file).group(1)
 
         path = Path(__file__).parent.parent
-        filename = f"{path}/uploads/{file.filename}"
-        file.save(filename)
-        return filename
+        filename = f"{path}/uploads/{randomName}.{extension}"
 
-        # file_path = Path(filename)
-        # if file_path.suffix != f".{extFile}":
-        #     Path(filename).unlink()
-        #     raise ValueError(
-        #         "El archivo no es un formato admitido, solo se acepta archivos jpeg")
+        response = requests.get(file)
+        with open(filename, "wb") as f:
+            f.write(response.content)
+        return filename
 
     @classmethod
     def saveCookieSession(self):
