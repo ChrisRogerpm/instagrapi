@@ -14,7 +14,7 @@ class InstagrapiService():
     @classmethod
     def setParameters(self, request):
         file = request.files
-        req = self.validateFields(request.form)
+        req = self.validateFields(request.json)
 
         pathFile = self.saveFiles(request, req['file'],  False)
         # pathBackground = self.saveFiles(request, file['background'], True)
