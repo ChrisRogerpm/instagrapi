@@ -169,10 +169,28 @@ class StoryBuilder:
             method="label",
             align="center"
         )
-        LinkClip = (
-            LinkClip
-            .set_position(("center", y))
-        )
+
+        text_width, text_height = LinkClip.size
+
+        if(text_width > self.width):
+            newWidth = text_width / 600
+            newSize = text_height * newWidth
+            screensize = (600, newSize)
+            LinkClip = TextClip(
+                " "+titleFinal+" ",
+                color=color,
+                bg_color="white",
+                font=font,
+                kerning=-1,
+                fontsize=self.fontsize,
+                stroke_width=1.5,
+                size=screensize,
+                method="caption",
+                align="center"
+            )
+
+        LinkClip = (LinkClip.set_position(("center", y)))
+
         return LinkClip
 
     def makeClipMedia(self, max_duration: int = 15, link: str = '', title: str = '', price: str = '', shortcut_link: str = ''):

@@ -13,15 +13,12 @@ import random
 class InstagrapiService():
     @classmethod
     def setParameters(self, request):
-        file = request.files
         req = self.validateFields(request.json)
-
         pathFile = self.saveFiles(request, req['file'],  False)
         # pathBackground = self.saveFiles(request, file['background'], True)
-
         data = {
-            # 'account': req['account'],
-            # 'password': req['password'],
+            'account': req['account'],
+            'password': req['password'],
             'description': req.get('description') or '',
             'file': pathFile,
             # 'background': pathBackground,
@@ -38,11 +35,19 @@ class InstagrapiService():
     @classmethod
     def isLogin(self, obj):
         try:
-            path = Path(__file__).parent.parent
-            filename = f"{path}/uploads/christianrpm90.json"
-            cl = Client(json.load(open(filename)))
-            # cl = Client()
-            # cl.login(obj['account'], obj['password'])
+            fileCookie = obj['account'].replace("@", "").replace(".", "")
+            dirPath = Path(__file__).parent.parent
+            filePath = f"{dirPath}/uploads/{fileCookie}.json"
+            file = Path(filePath)
+            cl = Client()
+            if file.exists():
+                # print(f"El archivo {fileCookie} existe.")
+                cl = Client(json.load(open(filePath)))
+            # else:
+            #     print(f"El archivo {fileCookie} no existe.")
+                cl.login(obj['account'], obj['password'])
+                with open(filePath, 'w') as f:
+                    json.dump(cl.get_settings(), f, indent=2)
             return cl
         except Exception as ex:
             raise Exception(ex)
@@ -97,15 +102,15 @@ class InstagrapiService():
 
     @classmethod
     def validateFields(self, obj):
-        # if obj['account'] == '' or obj['password'] == '':
-        #     raise ValueError("Los campos account y password son obligatorios")
+        if obj['account'] == '' or obj['password'] == '':
+            raise ValueError("Los campos account y password son obligatorios")
         return obj
 
     @classmethod
     def saveFiles(self, request, file, isBackground):
         randomName = ''.join(random.choice(string.ascii_lowercase)
                              for i in range(10))
-        extension = "jpeg"#re.search("\.([^.]+)$", file).group(1)
+        extension = "jpeg"  # re.search("\.([^.]+)$", file).group(1)
 
         path = Path(__file__).parent.parent
         filename = f"{path}/uploads/{randomName}.{extension}"
