@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-
+from models.User import User
 from utils.InstagrapiService import InstagrapiService
 
 main = Blueprint('instagrapi_blueprint', __name__)
@@ -71,13 +71,42 @@ def searchFont():
     })
 
 
-@main.route('/getLogin', methods=['POST'])
-def getLogin():
+@main.route('/getUser', methods=['GET'])
+def getUser():
     data = []
     message = ""
     try:
-        # req = InstagrapiService.setParameters(request)
-        data = InstagrapiService.saveCookieSession()
+        data = User.getAllUser()
+    except (Exception) as ex:
+        message = str(ex)
+    return jsonify({
+        'data': data,
+        'message': message
+    })
+
+
+@main.route('/createUser', methods=['POST'])
+def createUser():
+    data = []
+    message = ""
+    try:
+        obj = request.json
+        data = User.createUser(obj)
+    except (Exception) as ex:
+        message = str(ex)
+    return jsonify({
+        'data': data,
+        'message': message
+    })
+
+
+@main.route('/findUser', methods=['POST'])
+def findUser():
+    data = []
+    message = ""
+    try:
+        obj = request.json
+        data = User.findUser(obj['md5'])
     except (Exception) as ex:
         message = str(ex)
     return jsonify({

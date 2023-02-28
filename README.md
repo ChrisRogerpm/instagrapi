@@ -1,7 +1,8 @@
 # Installation
 
-Install ImageMagick library:
+Install ImageMagick and libraries:
 ```
+sudo apt-get install default-libmysqlclient-dev build-essential
 sudo apt install imagemagick
 ```
 

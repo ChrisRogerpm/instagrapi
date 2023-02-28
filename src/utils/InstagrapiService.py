@@ -1,13 +1,16 @@
 from instagrapi import Client
-from instagrapi.types import StoryLink, StorySticker, StoryStickerLink, StoryBuild
 from utils.storyCustom import StoryBuilder
-# from instagrapi.story import StoryBuilder
+from utils.ImageColor import ImageColor
+from moviepy.editor import TextClip
+from flask import jsonify
+from models.User import User
 from pathlib import Path
-from moviepy.editor import VideoFileClip, TextClip
 import json
 import requests
 import string
 import random
+from datetime import datetime
+import pytz
 
 
 class InstagrapiService():
@@ -15,13 +18,12 @@ class InstagrapiService():
     def setParameters(self, request):
         req = self.validateFields(request.json)
         pathFile = self.saveFiles(request, req['file'],  False)
-        # pathBackground = self.saveFiles(request, file['background'], True)
         data = {
             'account': req['account'],
-            'password': req['password'],
+            'password': req['password'] or '',
             'description': req.get('description') or '',
+            'md5': req.get('md5') or '',
             'file': pathFile,
-            # 'background': pathBackground,
             'font': req.get('font') or 'Roboto',
             'fontSize': req.get('fontSize') or 48,
             'color': req.get('color') or 'black',
@@ -35,22 +37,37 @@ class InstagrapiService():
     @classmethod
     def isLogin(self, obj):
         try:
-            fileCookie = obj['account'].replace("@", "").replace(".", "")
-            dirPath = Path(__file__).parent.parent
-            filePath = f"{dirPath}/uploads/{fileCookie}.json"
-            file = Path(filePath)
+            user = User.findUser(obj['md5'])
             cl = Client()
-            if file.exists():
-                # print(f"El archivo {fileCookie} existe.")
-                cl = Client(json.load(open(filePath)))
-            # else:
-            #     print(f"El archivo {fileCookie} no existe.")
-                cl.login(obj['account'], obj['password'])
-                with open(filePath, 'w') as f:
-                    json.dump(cl.get_settings(), f, indent=2)
+            if len(user) == 0:
+                print('User not found')
+                cl = self.saveSessionOrNewLogin(obj, cl)
+            else:
+                tz = pytz.timezone('America/Montevideo')
+                dateExpired = user['dateExpired'].strftime("%Y-%m-%d")
+                nowDate = datetime.now(tz).strftime("%Y-%m-%d")
+                if dateExpired == nowDate:
+                    cl = self.saveSessionOrNewLogin(obj, cl)
+                else:
+                    cookie = json.loads(user['cookie'])
+                    cl = Client(cookie)
             return cl
         except Exception as ex:
             raise Exception(ex)
+
+    @classmethod
+    def saveSessionOrNewLogin(self, obj, cl):
+        if not obj.get("password"):
+            raise ValueError(
+                "El campo password es obligatorio para una nuevo login o un re login")
+        cl.login(obj['account'], obj['password'])
+        userObj = {
+            'account_ig': obj['account'],
+            'cookie': json.dumps(cl.get_settings()),
+            'md5': obj['md5']
+        }
+        User.createOrUpdateUser(userObj)
+        return cl
 
     @classmethod
     def uploadPhoto(self, obj):
@@ -77,9 +94,11 @@ class InstagrapiService():
     @classmethod
     def uploadStoryPhotoVideo(self, obj):
         mediapath = obj['file']
+        backgroundColor = ImageColor.getColorBackgroundImage(mediapath)
+        backgroundFile = ImageColor.makeImageBackground(backgroundColor)
         buildout = StoryBuilder(
             path=mediapath,
-            bgpath=None,  # if obj['background'] == '' else obj['background'],
+            bgpath=backgroundFile,
             color=obj['color'],
             font=obj['font'],
             fontsize=obj['fontSize']
@@ -102,8 +121,8 @@ class InstagrapiService():
 
     @classmethod
     def validateFields(self, obj):
-        if obj['account'] == '' or obj['password'] == '':
-            raise ValueError("Los campos account y password son obligatorios")
+        if not obj.get("account") or not obj.get("md5"):
+            raise ValueError("Los campos account y md5 son obligatorios")
         return obj
 
     @classmethod
@@ -119,12 +138,3 @@ class InstagrapiService():
         with open(filename, "wb") as f:
             f.write(response.content)
         return filename
-
-    @classmethod
-    def saveCookieSession(self):
-        data = [{"a": 54, "b": 87}, {"c": 81, "d": 63}, {"e": 17, "f": 39}]
-        letters = string.ascii_lowercase
-        letters = ''.join(random.choice(letters) for i in range(10))
-        # print ( ''.join(random.choice(letters) for i in range(10)) )
-        with open(f"uploads/{letters}.json", 'w') as f:
-            json.dump(data, f, indent=2)
