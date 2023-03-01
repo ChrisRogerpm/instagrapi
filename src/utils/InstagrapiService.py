@@ -20,7 +20,7 @@ class InstagrapiService():
         pathFile = self.saveFiles(request, req['file'],  False)
         data = {
             'account': req['account'],
-            'password': req['password'] or '',
+            'password': req.get('password') or '',
             'description': req.get('description') or '',
             'md5': req.get('md5') or '',
             'file': pathFile,
@@ -114,6 +114,7 @@ class InstagrapiService():
             stickers=buildout.stickers
         )
         Path(mediapath).unlink()
+        Path(backgroundFile).unlink()
 
     @classmethod
     def searchFont(self, search):
