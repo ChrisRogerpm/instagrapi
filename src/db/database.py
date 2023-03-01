@@ -1,15 +1,15 @@
+from decouple import config
 import mysql.connector
-import os
 
 
 class Database:
     def __init__(self):
         self.connection = mysql.connector.connect(
-            host=os.getenv("MYSQL_HOST"),
-            user=os.getenv("MYSQL_USER"),
-            password=os.getenv("MYSQL_PASSWORD"),
-            database=os.getenv("MYSQL_DB"),
-            port=os.getenv("MYSQL_PORT"),
+            host=config('MYSQL_HOST'),
+            user=config('MYSQL_USER'),
+            password=config('MYSQL_PASSWORD'),
+            database=config('MYSQL_DB'),
+            port=config('MYSQL_PORT'),
         )
 
     def saveOrUpdate(self, query, parameters):
