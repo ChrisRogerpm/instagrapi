@@ -6,17 +6,17 @@ from datetime import datetime, timedelta
 class User():
     db = Database()
 
-    def __init__(self, account_ig='', cookie='', dateExpired='', _md5='', activo=''):
+    def __init__(self, account_ig='', cookie='', dateExpired='', md5='', activo=''):
         self.account_ig = account_ig
         self.cookie = cookie
         self.dateExpired = dateExpired
-        self.md5 = _md5
+        self.md5 = md5
         self.activo = activo
 
     @classmethod
     def getAllUser(self):
         result = self.db.get(
-            "SELECT u.id, u.account_ig, u.cookie, u.dateExpired, u._md5, u.activo FROM users as u")
+            "SELECT u.id, u.account_ig, u.cookie, u.dateExpired, u.md5, u.activo FROM users as u")
         if len(result) == 0:
             return []
         users = []
@@ -30,7 +30,7 @@ class User():
         if md5 == '':
             raise ValueError("Los campos account y password son obligatorios")
         result = self.db.get(
-            "SELECT u.id, u.account_ig, u.cookie, u.dateExpired, u._md5, u.activo FROM users as u WHERE u._md5 =%s", (md5,))
+            "SELECT u.id, u.account_ig, u.cookie, u.dateExpired, u.md5, u.activo FROM users as u WHERE u.md5 =%s", (md5,))
         if len(result) == 0:
             return []
         user = User(result[0][1], result[0][2], result[0]
@@ -39,11 +39,11 @@ class User():
 
     @classmethod
     def createOrUpdateUser(self, user):
-        user = self.findUser(user['md5'])
+        userFind = self.findUser(user['md5'])
         tz = pytz.timezone('America/Montevideo')
         nowDate = datetime.now(tz) + timedelta(days=365)
-        if len(user) == 0:
-            query = "INSERT INTO users (account_ig, cookie, dateExpired, `_md5`, activo) VALUES (%s, %s, %s, %s, %s)"
+        if len(userFind) == 0:
+            query = "INSERT INTO users (account_ig, cookie, dateExpired, `md5`, activo) VALUES (%s, %s, %s, %s, %s)"
             parameters = (
                 str(user['account_ig']),
                 str(user['cookie']),
@@ -53,7 +53,7 @@ class User():
             )
             self.db.saveOrUpdate(query, parameters)
         else:
-            query = "UPDATE users SET cookie=%s, dateExpired=%s, WHERE _md5=%s"
+            query = "UPDATE users AS u SET u.cookie=%s, u.dateExpired=%s WHERE u.md5 = %s "
             parameters = (
                 str(user['cookie']),
                 nowDate,

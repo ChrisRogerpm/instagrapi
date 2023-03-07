@@ -91,7 +91,7 @@ def createUser():
     message = ""
     try:
         obj = request.json
-        data = User.createUser(obj)
+        data = User.createOrUpdateUser(obj)
     except (Exception) as ex:
         message = str(ex)
     return jsonify({
