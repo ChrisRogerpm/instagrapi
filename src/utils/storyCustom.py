@@ -174,6 +174,7 @@ class StoryBuilder:
 
         if(text_width > self.width):
             newWidth = text_width / 600
+            newWidth = newWidth + 1 if newWidth.is_integer() == False else newWidth
             newSize = text_height * newWidth
             screensize = (600, newSize)
             LinkClip = TextClip(
