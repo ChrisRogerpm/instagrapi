@@ -108,13 +108,32 @@ class InstagrapiService():
             price=obj['price'],
             shortcut_link=obj['shortcut_link'],
         )
-        cl = self.isLogin(obj)
-        cl.video_upload_to_story(
-            path=buildout.path,
-            stickers=buildout.stickers
-        )
-        Path(mediapath).unlink()
-        Path(backgroundFile).unlink()
+        try:
+            cl = self.isLogin(obj)
+            cl.video_upload_to_story(
+                path=buildout.path,
+                stickers=buildout.stickers
+            )
+            Path(mediapath).unlink()
+            Path(backgroundFile).unlink()
+        except (Exception, ValueError) as ex:
+            self.catchs_exception(ex, obj)
+
+    @classmethod
+    def catchs_exception(self, ex, obj):
+        data = json.loads(str(ex))
+        if(data['message'] == "login_required"):
+            self.reLogin(obj)
+            raise ValueError("Se ha iniciado sesión nuevamente")
+
+    @classmethod
+    def reLogin(self, obj):
+        try:
+            cl = Client()
+            cl = self.saveSessionOrNewLogin(obj, cl)
+        except(Exception) as ex:
+            raise ValueError(str(ex))
+        return cl
 
     @classmethod
     def searchFont(self, search):
