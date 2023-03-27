@@ -72,13 +72,15 @@ class InstagrapiService():
     @classmethod
     def uploadPhoto(self, obj):
         mediapath = obj['file']
-
-        cl = self.isLogin(obj)
-        cl.photo_upload(
-            path=Path(mediapath),
-            caption=obj['description'],
-        )
-        Path(mediapath).unlink()
+        try:
+            cl = self.isLogin(obj)
+            cl.photo_upload(
+                path=Path(mediapath),
+                caption=obj['description'],
+            )
+            Path(mediapath).unlink()
+        except (Exception, ValueError) as ex:
+            self.catchs_exception(ex, obj)
 
     @classmethod
     def uploadVideo(self, obj):
