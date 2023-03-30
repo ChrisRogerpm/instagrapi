@@ -11,6 +11,7 @@ import string
 import random
 from datetime import datetime
 import pytz
+import re
 
 
 class InstagrapiService():
@@ -24,8 +25,9 @@ class InstagrapiService():
             'description': req.get('description') or '',
             'md5': req.get('md5') or '',
             'file': pathFile,
-            'font': req.get('font') or 'Roboto',
-            'fontSize': req.get('fontSize') or 48,
+            # 'font': req.get('font') or 'DejaVu-Sans-Bold',
+            'font': req.get('font') or 'Roboto-Bold',
+            'fontSize': req.get('fontSize') or 56,
             'color': req.get('color') or 'black',
             'title': req.get('title') or '',
             'link': req.get('link') or '',
@@ -81,6 +83,12 @@ class InstagrapiService():
             Path(mediapath).unlink()
         except (Exception, ValueError) as ex:
             self.catchs_exception(ex, obj)
+        # cl = self.isLogin(obj)
+        # cl.photo_upload(
+        #     path=Path(mediapath),
+        #     caption=obj['description'],
+        # )
+        # Path(mediapath).unlink()
 
     @classmethod
     def uploadVideo(self, obj):
@@ -109,6 +117,7 @@ class InstagrapiService():
             title=obj['title'],
             price=obj['price'],
             shortcut_link=obj['shortcut_link'],
+            colors=backgroundColor
         )
         try:
             cl = self.isLogin(obj)
@@ -123,10 +132,11 @@ class InstagrapiService():
 
     @classmethod
     def catchs_exception(self, ex, obj):
-        data = json.loads(str(ex))
-        if(data['message'] == "login_required"):
+        data = str(ex)
+        if(bool(re.compile("login_required").search(data))):
             self.reLogin(obj)
             raise ValueError("Se ha iniciado sesión nuevamente")
+        raise ValueError(data)
 
     @classmethod
     def reLogin(self, obj):

@@ -37,3 +37,5 @@ colormap==1.0.4
 pandas
 easydev
 mysql-connector-python
+
+opencv-python-headless
