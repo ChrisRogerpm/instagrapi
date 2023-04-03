@@ -101,13 +101,13 @@ class StoryBuilder:
                     y=110,
                     title=title,
                     colors=colors,
-                    fontSize=64,
+                    fontSize=48,
                     withIcon=False
                 )
                 clips.append(ClipTitle)
             if price != '':
                 ClipPrice = self.makeTextClip(
-                    y=240,
+                    y=280,
                     title=price,
                     fontSize=48,
                     withIcon=False
