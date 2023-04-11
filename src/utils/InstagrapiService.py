@@ -28,7 +28,8 @@ class InstagrapiService():
             # 'font': req.get('font') or 'DejaVu-Sans-Bold',
             'font': req.get('font') or 'Roboto-Bold',
             'fontSize': req.get('fontSize') or 56,
-            'color': req.get('color') or 'black',
+            'colorLabel': req.get('colorLabel') or '#000000',
+            'backgroundLabel': req.get('backgroundLabel') or '#FFFFFF',
             'title': req.get('title') or '',
             'link': req.get('link') or '',
             'shortcut_link': req.get('shortcut_link') or '',
@@ -109,7 +110,6 @@ class InstagrapiService():
         buildout = StoryBuilder(
             path=mediapath,
             bgpath=backgroundFile,
-            color=obj['color'],
             font=obj['font'],
             fontsize=obj['fontSize']
         ).makeClipMedia(
@@ -117,7 +117,8 @@ class InstagrapiService():
             title=obj['title'],
             price=obj['price'],
             shortcut_link=obj['shortcut_link'],
-            colors=backgroundColor
+            colorLabel=obj['colorLabel'],
+            backgroundLabel=obj['backgroundLabel']
         )
         try:
             cl = self.isLogin(obj)
@@ -155,7 +156,16 @@ class InstagrapiService():
     def validateFields(self, obj):
         if not obj.get("account") or not obj.get("md5"):
             raise ValueError("Los campos account y md5 son obligatorios")
+        if not (self.validateColorHexadecimal(obj['colorLabel']) and self.validateColorHexadecimal(obj['backgroundLabel'])):
+            raise ValueError(
+                "Los campos colorLabel y backgroundLabel al menos uno de estos colores ingresados es inválido.")
         return obj
+
+    @classmethod
+    def validateColorHexadecimal(self, color):
+        # Expresión regular para validar colores hexadecimales de 3 o 6 dígitos
+        patron = re.compile(r'^#(?:[0-9a-fA-F]{3}){1,2}$')
+        return bool(patron.match(color))
 
     @classmethod
     def saveFiles(self, request, file, isBackground):

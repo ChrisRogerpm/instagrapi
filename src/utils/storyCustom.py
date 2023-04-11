@@ -61,7 +61,7 @@ class StoryBuilder:
         self.font = font,
         self.fontsize = fontsize
 
-    def build_main(self, clip, max_duration: int = 0, link: str = "", title: str = '', price: str = '', shortcut_link: str = '', colors: any = []) -> StoryBuild:
+    def build_main(self, clip, max_duration: int = 0, link: str = "", title: str = '', price: str = '', shortcut_link: str = '', colorLabel: str = "", backgroundLabel: str = "") -> StoryBuild:
         """
         Build clip
 
@@ -98,9 +98,10 @@ class StoryBuilder:
         if link:
             if title != '':
                 ClipTitle = self.makeTextClip(
-                    y=110,
+                    y=100,
                     title=title,
-                    colors=colors,
+                    colorLabel=colorLabel,
+                    backgroundLabel=backgroundLabel,
                     fontSize=48,
                     withIcon=False
                 )
@@ -109,6 +110,8 @@ class StoryBuilder:
                 ClipPrice = self.makeTextClip(
                     y=280,
                     title=price,
+                    colorLabel=colorLabel,
+                    backgroundLabel=backgroundLabel,
                     fontSize=48,
                     withIcon=False
                 )
@@ -117,6 +120,8 @@ class StoryBuilder:
                 ClipLink = self.makeTextClip(
                     y=1000,
                     title=link,
+                    colorLabel=colorLabel,
+                    backgroundLabel=backgroundLabel,
                     fontSize=48,
                     shortcut_link=shortcut_link,
                     withIcon=True
@@ -163,11 +168,11 @@ class StoryBuilder:
                 paths.append(path)
         return StoryBuild(mentions=[], path=destination, paths=[], stickers=stickers)
 
-    def makeTextClip(self, title: str = '', shortcut_link: str = '', y: int = 0, colors: any = [], fontSize: int = 48, withIcon: bool = True):
+    def makeTextClip(self, title: str = '', shortcut_link: str = '', y: int = 0, colorLabel: str = "", backgroundLabel: str = "", fontSize: int = 48, withIcon: bool = True):
         texto = shortcut_link if shortcut_link != '' else title
         tamano_fuente = fontSize
-        color_fondo = (255, 255, 255, 1)
-        color_texto = (0, 0, 0, 0)
+        color_fondo = self.hex_to_rgba(backgroundLabel)  # (255, 255, 255, 1)
+        color_texto = self.hex_to_rgba(colorLabel)  # (0, 0, 0, 0)
         path = Path(__file__).parent.parent
 
         archivo_icono = f"{path}/icons/link_icon.ico"
@@ -211,6 +216,12 @@ class StoryBuilder:
         icono = icono.resize((int(ancho_icono * factor_escala),
                               int(alto_icono * factor_escala)), Image.ANTIALIAS)
 
+        # Aplicar el color del texto al icono
+        icono_gris = ImageOps.grayscale(icono)
+        icono_coloreado = ImageOps.colorize(
+            icono_gris, color_texto, color_texto)
+        icono_coloreado.putalpha(icono.split()[3])
+
         # Calcular el tamaño del texto y el tamaño de la etiqueta con el padding
         tamaño_texto = font.getsize(texto)
         tamaño_etiqueta = (tamaño_texto[0] + icono.width + 3 *
@@ -221,8 +232,8 @@ class StoryBuilder:
         draw = ImageDraw.Draw(imagen)
 
         # Dibujar el icono y el texto en la imagen
-        imagen.paste(
-            icono, (padding, (tamaño_etiqueta[1] - icono.height) // 2), icono)
+        imagen.paste(icono_coloreado, (padding,
+                     (tamaño_etiqueta[1] - icono.height) // 2), icono_coloreado)
         draw.text((icono.width + 2 * padding, padding),
                   texto, font=font, fill=color_texto)
 
@@ -236,11 +247,12 @@ class StoryBuilder:
             [0, redondeado, tamaño_etiqueta[0], tamaño_etiqueta[1] - redondeado], fill=255)
         draw_mascara.ellipse([0, 0, 2 * redondeado, 2 * redondeado], fill=255)
         draw_mascara.ellipse([tamaño_etiqueta[0] - 2 * redondeado,
-                              0, tamaño_etiqueta[0], 2 * redondeado], fill=255)
+                             0, tamaño_etiqueta[0], 2 * redondeado], fill=255)
         draw_mascara.ellipse([0, tamaño_etiqueta[1] - 2 * redondeado,
-                              2 * redondeado, tamaño_etiqueta[1]], fill=255)
+                             2 * redondeado, tamaño_etiqueta[1]], fill=255)
         draw_mascara.ellipse([tamaño_etiqueta[0] - 2 * redondeado, tamaño_etiqueta[1] -
-                              2 * redondeado, tamaño_etiqueta[0], tamaño_etiqueta[1]], fill=255)
+                             2 * redondeado, tamaño_etiqueta[0], tamaño_etiqueta[1]], fill=255)
+
         imagen.putalpha(mascara)
         return imagen
 
@@ -315,7 +327,23 @@ class StoryBuilder:
                              for i in range(10))
         return randomName
 
-    def makeClipMedia(self, max_duration: int = 15, link: str = '', title: str = '', price: str = '', shortcut_link: str = '', colors: any = []):
+    def hex_to_rgba(self, hex_code, alpha=1):
+        """
+        Convierte una cadena hexadecimal en un valor RGBA.
+        :param hex_code: cadena hexadecimal (ejemplo: "#FF0000")
+        :param alpha: valor de opacidad (valor por defecto: 1)
+        :return: valor RGBA (tupla con 4 valores)
+        """
+        # Elimina el signo de numeral (#) del inicio de la cadena, si lo tiene.
+        hex_code = hex_code.lstrip("#")
+
+        # Divide la cadena en valores RGB.
+        rgb = tuple(int(hex_code[i:i+2], 16) for i in (0, 2, 4))
+
+        # Devuelve el valor RGBA.
+        return rgb + (alpha,)
+
+    def makeClipMedia(self, max_duration: int = 15, link: str = '', title: str = '', price: str = '', shortcut_link: str = '', colorLabel: str = "", backgroundLabel: str = ""):
         clip = ""
         typeFile = self.path.suffix
         if typeFile == '.jpeg':
@@ -335,7 +363,8 @@ class StoryBuilder:
                     title=title,
                     price=price,
                     shortcut_link=shortcut_link,
-                    colors=colors,
+                    colorLabel=colorLabel,
+                    backgroundLabel=backgroundLabel
                 )
         else:
             clip = VideoFileClip(str(self.path), has_mask=True)
@@ -346,7 +375,8 @@ class StoryBuilder:
                 title=title,
                 price=price,
                 shortcut_link=shortcut_link,
-                colors=colors,
+                colorLabel=colorLabel,
+                backgroundLabel=backgroundLabel
             )
             clip.close()
             return build
