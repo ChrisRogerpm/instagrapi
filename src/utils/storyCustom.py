@@ -61,7 +61,7 @@ class StoryBuilder:
         self.font = font,
         self.fontsize = fontsize
 
-    def build_main(self, clip, max_duration: int = 0, link: str = "", title: str = '', price: str = '', shortcut_link: str = '', colorLabel: str = "", backgroundLabel: str = "") -> StoryBuild:
+    def build_main(self, clip, max_duration: int = 0, link: str = "", title: str = '', price: str = '', shortcut_link: str = '', color_text: str = "", background_color_text: str = "") -> StoryBuild:
         """
         Build clip
 
@@ -100,8 +100,8 @@ class StoryBuilder:
                 ClipTitle = self.makeTextClip(
                     y=100,
                     title=title,
-                    colorLabel=colorLabel,
-                    backgroundLabel=backgroundLabel,
+                    color_text=color_text,
+                    background_color_text=background_color_text,
                     fontSize=48,
                     withIcon=False
                 )
@@ -110,8 +110,8 @@ class StoryBuilder:
                 ClipPrice = self.makeTextClip(
                     y=280,
                     title=price,
-                    colorLabel=colorLabel,
-                    backgroundLabel=backgroundLabel,
+                    color_text=color_text,
+                    background_color_text=background_color_text,
                     fontSize=48,
                     withIcon=False
                 )
@@ -120,8 +120,8 @@ class StoryBuilder:
                 ClipLink = self.makeTextClip(
                     y=1000,
                     title=link,
-                    colorLabel=colorLabel,
-                    backgroundLabel=backgroundLabel,
+                    color_text=color_text,
+                    background_color_text=background_color_text,
                     fontSize=48,
                     shortcut_link=shortcut_link,
                     withIcon=True
@@ -168,11 +168,11 @@ class StoryBuilder:
                 paths.append(path)
         return StoryBuild(mentions=[], path=destination, paths=[], stickers=stickers)
 
-    def makeTextClip(self, title: str = '', shortcut_link: str = '', y: int = 0, colorLabel: str = "", backgroundLabel: str = "", fontSize: int = 48, withIcon: bool = True):
+    def makeTextClip(self, title: str = '', shortcut_link: str = '', y: int = 0, color_text: str = "", background_color_text: str = "", fontSize: int = 48, withIcon: bool = True):
         texto = shortcut_link if shortcut_link != '' else title
         tamano_fuente = fontSize
-        color_fondo = self.hex_to_rgba(backgroundLabel)  # (255, 255, 255, 1)
-        color_texto = self.hex_to_rgba(colorLabel)  # (0, 0, 0, 0)
+        color_fondo = self.hex_to_rgba(background_color_text)  # (255, 255, 255, 1)
+        color_texto = self.hex_to_rgba(color_text)  # (0, 0, 0, 0)
         path = Path(__file__).parent.parent
 
         archivo_icono = f"{path}/icons/link_icon.ico"
@@ -343,7 +343,7 @@ class StoryBuilder:
         # Devuelve el valor RGBA.
         return rgb + (alpha,)
 
-    def makeClipMedia(self, max_duration: int = 15, link: str = '', title: str = '', price: str = '', shortcut_link: str = '', colorLabel: str = "", backgroundLabel: str = ""):
+    def makeClipMedia(self, max_duration: int = 15, link: str = '', title: str = '', price: str = '', shortcut_link: str = '', color_text: str = "", background_color_text: str = ""):
         clip = ""
         typeFile = self.path.suffix
         if typeFile == '.jpeg':
@@ -363,8 +363,8 @@ class StoryBuilder:
                     title=title,
                     price=price,
                     shortcut_link=shortcut_link,
-                    colorLabel=colorLabel,
-                    backgroundLabel=backgroundLabel
+                    color_text=color_text,
+                    background_color_text=background_color_text
                 )
         else:
             clip = VideoFileClip(str(self.path), has_mask=True)
@@ -375,8 +375,8 @@ class StoryBuilder:
                 title=title,
                 price=price,
                 shortcut_link=shortcut_link,
-                colorLabel=colorLabel,
-                backgroundLabel=backgroundLabel
+                color_text=color_text,
+                background_color_text=background_color_text
             )
             clip.close()
             return build
