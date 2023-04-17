@@ -23,7 +23,7 @@ from instagrapi.exceptions import (
 class InstagrapiService():
     @classmethod
     def setParameters(self, request):
-        req = self.validateFields(request.json)
+        req = request.json
         pathFile = self.saveFiles(request, req['file'])
         data = {
             'account': req['account'],
@@ -40,6 +40,7 @@ class InstagrapiService():
             'shortcut_link': req.get('shortcut_link') or '',
             'price': req.get('price') or '',
         }
+        self.validateFields(data)
         return data
 
     @classmethod
