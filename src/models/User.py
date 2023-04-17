@@ -30,14 +30,16 @@ class User():
         if md5 == '':
             raise ValueError("Los campos account y password son obligatorios")
         result = self.db.get(
-            "SELECT u.id, u.account_ig, u.cookie, u.dateExpired, u.md5, u.activo FROM users as u WHERE u.md5 =%s and u.account_ig = %s", (md5, account))
+            "SELECT u.id, u.account_ig, u.cookie, u.dateExpired, u.md5, u.activo FROM users as u WHERE u.md5 = %s and u.account_ig = %s",
+            (str(md5), str(account))
+        )
         if len(result) == 0:
             return []
         user = User(result[0][1], result[0][2], result[0]
                     [3], result[0][4], result[0][4])
         return user.__dict__
 
-    @classmethod
+    @ classmethod
     def createOrUpdateUser(self, user):
         userFind = self.findUser(user['account_ig'], user['md5'])
         tz = pytz.timezone('America/Montevideo')

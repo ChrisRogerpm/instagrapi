@@ -24,7 +24,7 @@ class InstagrapiService():
     @classmethod
     def setParameters(self, request):
         req = self.validateFields(request.json)
-        pathFile = self.saveFiles(request, req['file'],  False)
+        pathFile = self.saveFiles(request, req['file'])
         data = {
             'account': req['account'],
             'password': req.get('password') or '',
@@ -121,9 +121,13 @@ class InstagrapiService():
                 path=buildout.path,
                 stickers=buildout.stickers
             )
-        except ChallengeRequired as e:
+        except ClientLoginRequired as e:
+            raise ValueError(f"Error: {e}")
+        except (ChallengeRequired, ClientError) as e:
             raise ValueError(
                 "Error: Se requiere resolver una capa de seguridad. Por favor, completa el desafío en la aplicación de Instagram o en el sitio web.")
+        except Exception as e:
+            raise ValueError(f"Error inesperado: {e}")
         Path(mediapath).unlink()
         Path(backgroundFile).unlink()
 
@@ -186,11 +190,11 @@ class InstagrapiService():
         try:
             cl = Client()
             cl.login(obj['account'], obj['password'])
-        except ChallengeRequired as e:
+        except ClientLoginRequired as e:
+            raise ValueError(f"Error: {e}")
+        except (ChallengeRequired, ClientError) as e:
             raise ValueError(
                 "Error: Se requiere resolver una capa de seguridad. Por favor, completa el desafío en la aplicación de Instagram o en el sitio web.")
-        except (ClientError, TwoFactorRequired) as e:
-            print(f"Error: {e}")
         except Exception as e:
-            print(f"Error inesperado: {e}")
+            raise ValueError(f"Error inesperado: {e}")
         return cl
