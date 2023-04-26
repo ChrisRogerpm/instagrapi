@@ -2,6 +2,7 @@
 
 Install ImageMagick and libraries:
 ```
+sudo apt-get install libjpeg-dev libpng-dev libtiff-dev libfreetype6-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev
 sudo apt-get install default-libmysqlclient-dev build-essential
 sudo apt install imagemagick
 ```

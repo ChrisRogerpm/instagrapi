@@ -191,8 +191,6 @@ class InstagrapiService():
         try:
             cl = Client()
             cl.login(obj['account'], obj['password'])
-        except ClientLoginRequired as e:
-            raise ValueError(f"Error: {e}")
         except (ChallengeRequired, ClientError) as e:
             raise ValueError(
                 "Error: Se requiere resolver una capa de seguridad. Por favor, completa el desafío en la aplicación de Instagram o en el sitio web.")
