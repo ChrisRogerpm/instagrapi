@@ -93,9 +93,14 @@ class InstagrapiService():
                 path=Path(mediapath),
                 caption=obj['description'],
             )
+        except ClientLoginRequired as e:
+            raise ValueError(f"Error: {e}")
         except ChallengeRequired as e:
-            raise ValueError(
-                "Error: Se requiere resolver una capa de seguridad. Por favor, completa el desafío en la aplicación de Instagram o en el sitio web.")
+            raise ValueError(f"Error: {e}")
+        except ClientError as e:
+            raise ValueError(f"Error: {e}")
+        except Exception as e:
+            raise ValueError(f"Error inesperado: {e}")
         Path(mediapath).unlink()
 
     @classmethod
@@ -124,9 +129,12 @@ class InstagrapiService():
             )
         except ClientLoginRequired as e:
             raise ValueError(f"Error: {e}")
-        except (ChallengeRequired, ClientError) as e:
-            raise ValueError(
-                "Error: Se requiere resolver una capa de seguridad. Por favor, completa el desafío en la aplicación de Instagram o en el sitio web.")
+        except TwoFactorRequired as e:
+            raise ValueError(f"Error: {e}")
+        except ChallengeRequired as e:
+            raise ValueError(f"Error: {e}")
+        except ClientError as e:
+            raise ValueError(f"Error: {e}")
         except Exception as e:
             raise ValueError(f"Error inesperado: {e}")
         Path(mediapath).unlink()
@@ -191,9 +199,14 @@ class InstagrapiService():
         try:
             cl = Client()
             cl.login(obj['account'], obj['password'])
-        except (ChallengeRequired, ClientError) as e:
-            raise ValueError(
-                "Error: Se requiere resolver una capa de seguridad. Por favor, completa el desafío en la aplicación de Instagram o en el sitio web.")
+        except ClientLoginRequired as e:
+            raise ValueError(f"Error: {e}")
+        except TwoFactorRequired as e:
+            raise ValueError(f"Error: {e}")
+        except ChallengeRequired as e:
+            raise ValueError(f"Error: {e}")
+        except ClientError as e:
+            raise ValueError(f"Error: {e}")
         except Exception as e:
             raise ValueError(f"Error inesperado: {e}")
         return cl
